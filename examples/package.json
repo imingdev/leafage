@@ -1,0 +1,16 @@
+{
+  "name": "examples",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development node bin/dev.js",
+    "build": "cross-env NODE_ENV=production node bin/build.js",
+    "start": "cross-env NODE_ENV=production node bin/start.js"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "leafage": "latest"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
+  }
+}
