@@ -1,6 +1,6 @@
 {
   "name": "leafage",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "description": "The React Server Side Render Framework",
   "license": "MIT",
   "main": "./dist/core/Leafage.js",
