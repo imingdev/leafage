@@ -2,6 +2,13 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 
 // css loader
 export const cssLoaders = (opt) => {
+  const miniCssExtractLoader = {
+    loader: MiniCssExtractPlugin.loader,
+    options: {
+      emit: opt?.emitFile,
+    },
+  };
+
   const cssLoader = {
     loader: 'css-loader',
     options: {
@@ -17,7 +24,7 @@ export const cssLoaders = (opt) => {
 
   // generate loader string to be used with extract text plugin
   const generateLoaders = (loader, loaderOptions) => {
-    const loaders = [cssLoader, postcssLoader];
+    const loaders = [miniCssExtractLoader, cssLoader, postcssLoader];
 
     if (loader) {
       loaders.push({
@@ -29,9 +36,6 @@ export const cssLoaders = (opt) => {
       });
     }
 
-    if (opt.extract) {
-      return [MiniCssExtractPlugin.loader].concat(loaders);
-    }
     return loaders;
   };
 
