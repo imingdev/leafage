@@ -1,5 +1,5 @@
 import path from 'path';
-import glob from 'fast-glob';
+import glob from 'glob';
 import webpack from 'webpack';
 import WebpackDynamicEntryPlugin from 'webpack-dynamic-entry-plugin';
 import CssMinimizerWebpackPlugin from 'css-minimizer-webpack-plugin';
