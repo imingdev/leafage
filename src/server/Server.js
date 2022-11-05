@@ -1,8 +1,6 @@
 import path from 'path';
-import connect from 'connect';
-import serveStatic from 'serve-static';
+import express from 'express';
 import consola from 'consola';
-import parseUrl from 'parseurl';
 import isFunction from 'lodash/isFunction';
 import createError from 'http-errors';
 import createContext from './context';
@@ -17,7 +15,8 @@ export default class Server {
     this.renderer = renderer;
     this.options = options;
 
-    this.app = connect();
+    // 关闭版权并解决代理时取不到ip地址
+    this.app = express().disable('x-powered-by').set('trust proxy', 'loopback');
 
     this.ready = this.ready.bind(this);
     this.setupMiddleware = this.setupMiddleware.bind(this);
@@ -31,6 +30,8 @@ export default class Server {
       leafage.hook('server:devMiddleware', (devMiddleware) => {
         this.devMiddleware = devMiddleware;
       });
+      // disable etag
+      this.app.set('etag', false);
     }
   }
 
@@ -48,7 +49,7 @@ export default class Server {
     let middlewares = [
       // add Powered-By
       (req, res, next) => {
-        res.setHeader('X-Powered-By', `${pkg.name}/${pkg.version}`);
+        res.set('X-Powered-By', `${pkg.name}/${pkg.version}`);
 
         next();
       }];
@@ -61,11 +62,11 @@ export default class Server {
 
         return next();
       });
-    } else if (!builder.publicPath.startsWith('http')) {
+    } else if (!builder?.publicPath?.startsWith?.('http')) {
       // client static
       middlewares.push({
         route: `${builder.publicPath}${dir.static}`,
-        handle: serveStatic(path.join(dir.root, dir.dist, dir.static)),
+        handle: express.static(path.join(dir.root, dir.dist, dir.static)),
       });
     }
 
@@ -86,8 +87,7 @@ export default class Server {
 
   render(req, res, next) {
     const { renderer } = this;
-    const { pathname, query } = parseUrl(req);
-    const { name, params, styles, scripts } = renderer.matchResources(pathname);
+    const { name, params, styles, scripts } = renderer.matchResources(req.path);
     // check res
     if (name === '_error') {
       return next(createError(404));
@@ -101,7 +101,9 @@ export default class Server {
         return next(createError(404));
       }
 
-      const ctx = { req, res, pathname, query, params };
+      // set params
+      req.params = params || {};
+      const ctx = { req, res };
       const assets = { name, styles, scripts, Document, App, Component };
       const context = createContext({ ctx, assets, renderer });
 
@@ -120,14 +122,13 @@ export default class Server {
 
   async renderError(err, req, res, next) {
     const { renderer } = this;
-    const { pathname, query } = parseUrl(req);
     const viewName = '_error';
     const { styles, scripts } = renderer.getResources(viewName);
 
     try {
       const { Document, App, Component, getServerSideProps } = renderer.requireComponentConfig(viewName);
 
-      const ctx = { req, res, pathname, query, params: {} };
+      const ctx = { req, res };
       const assets = { name: viewName, styles, scripts, Document, App, Component };
       const context = createContext({ ctx, assets, renderer });
 
