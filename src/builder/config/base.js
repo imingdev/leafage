@@ -3,6 +3,7 @@ import WebpackDynamicEntryPlugin from 'webpack-dynamic-entry-plugin';
 import webpack from 'webpack';
 import consola from 'consola';
 import WebpackBarPlugin from 'webpackbar';
+import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import { styleLoaders, assetsLoaders } from '../utils/loaders';
 
 export default class WebpackBaseConfig {
@@ -112,7 +113,7 @@ export default class WebpackBaseConfig {
       ],
       options: babelOptions,
     }]
-      .concat(styleLoaders({ extract: env.isClient, sourceMap: dev, assetsPath }))
+      .concat(styleLoaders({ emitFile: env.isClient, sourceMap: dev, assetsPath }))
       .concat(assetsLoaders({ emitFile: env.isClient, assetsPath }));
   }
 
@@ -182,9 +183,13 @@ export default class WebpackBaseConfig {
   }
 
   plugins() {
-    const { name, color, nodeEnv } = this;
+    const { name, color, nodeEnv, assetsPath } = this;
 
     return [
+      new MiniCssExtractPlugin({
+        filename: assetsPath.css,
+        chunkFilename: assetsPath.css,
+      }),
       new WebpackDynamicEntryPlugin(),
       new WebpackBarPlugin({
         name,

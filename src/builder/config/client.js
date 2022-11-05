@@ -7,7 +7,6 @@ import TerserWebpackPlugin from 'terser-webpack-plugin';
 import { WebpackManifestPlugin } from 'webpack-manifest-plugin';
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 import { merge } from 'webpack-merge';
-import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import WebpackBaseConfig from './base';
 
 export default class WebpackClientConfig extends WebpackBaseConfig {
@@ -98,16 +97,12 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
   }
 
   plugins() {
-    const { dev, options, assetsPath } = this;
+    const { dev, options } = this;
     const { dir, builder } = options;
     const { publicPath } = builder;
 
     const plugins = super.plugins();
     plugins.push(
-      new MiniCssExtractPlugin({
-        filename: assetsPath.css,
-        chunkFilename: assetsPath.css,
-      }),
       new WebpackManifestPlugin({
         publicPath,
         fileName: path.join(dir.root, dir.dist, dir.manifest),
