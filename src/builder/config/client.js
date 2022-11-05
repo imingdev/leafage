@@ -1,5 +1,5 @@
 import path from 'path';
-import glob from 'glob';
+import glob from 'fast-glob';
 import webpack from 'webpack';
 import WebpackDynamicEntryPlugin from 'webpack-dynamic-entry-plugin';
 import CssMinimizerWebpackPlugin from 'css-minimizer-webpack-plugin';
@@ -40,7 +40,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
         options: {
           css,
           // eslint-disable-next-line no-underscore-dangle
-          app: glob.sync(path.join(dir.root, dir.src, dir.page, '_app.{js,jsx}'), { nosort: true })?.[0] || loadDefaultPages._app,
+          app: glob.sync(path.join(dir.root, dir.src, dir.page, '_app.{js,jsx}'))?.[0] || loadDefaultPages._app,
           id: globals.id,
           context: globals.context,
         },
