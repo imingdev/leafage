@@ -24,7 +24,7 @@
     "css-minimizer-webpack-plugin": "^4.0.0",
     "devalue": "^2.0.1",
     "express": "^4.18.2",
-    "glob": "^8.0.3",
+    "glob": "^7.2.3",
     "hable": "^3.0.0",
     "http-errors": "^2.0.0",
     "import-fresh": "^3.3.0",
