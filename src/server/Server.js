@@ -4,7 +4,6 @@ import consola from 'consola';
 import isFunction from 'lodash/isFunction';
 import createError from 'http-errors';
 import createContext from './context';
-import errorHandle from './utils/errorHandle';
 import pkg from '../../package.json';
 
 export default class Server {
@@ -128,18 +127,15 @@ export default class Server {
     try {
       const { Document, App, Component, getServerSideProps } = renderer.requireComponentConfig(viewName);
 
-      const ctx = { req, res };
+      const ctx = { req, res, err };
       const assets = { name: viewName, styles, scripts, Document, App, Component };
       const context = createContext({ ctx, assets, renderer });
 
-      const { statusCode, message } = errorHandle(err, req, res);
-
       if (!isFunction(getServerSideProps)) {
-        return context.render({ statusCode, message });
+        return context.render(null);
       }
 
-      const renderFn = (props) => context.render({ statusCode, message, ...props });
-      return getServerSideProps({ ...context, render: renderFn });
+      return getServerSideProps(context);
     } catch (errInfo) {
       return next(errInfo);
     }

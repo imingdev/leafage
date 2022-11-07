@@ -1,12 +1,18 @@
 import statuses from 'statuses';
+import errorHandle from './utils/errorHandle';
 
 export default ({ ctx, assets, renderer }) => {
-  const { req, res } = ctx;
+  const { req, res, err } = ctx;
 
   // 渲染
   const render = (props) => {
+    let propsValue = props;
+    if (err) {
+      const { statusCode, message } = errorHandle(err, req, res);
+      propsValue = { statusCode, message, ...props || {} };
+    }
     // html
-    const html = renderer.render(assets.name, props);
+    const html = renderer.render(assets.name, propsValue);
 
     res.send(html);
   };
