@@ -3,6 +3,7 @@ import express from 'express';
 import consola from 'consola';
 import isFunction from 'lodash/isFunction';
 import createError from 'http-errors';
+import Utils from 'leafage/dist/common/Utils';
 import createContext from './context';
 import pkg from '../../package.json';
 
@@ -13,6 +14,7 @@ export default class Server {
     this.leafage = leafage;
     this.renderer = renderer;
     this.options = options;
+    this.utils = new Utils(options);
 
     // 关闭版权并解决代理时取不到ip地址
     this.app = express().disable('x-powered-by').set('trust proxy', 'loopback');
@@ -21,6 +23,7 @@ export default class Server {
     this.setupMiddleware = this.setupMiddleware.bind(this);
     this.render = this.render.bind(this);
     this.renderError = this.renderError.bind(this);
+    this.requireMiddleware = this.requireMiddleware.bind(this);
     this.useMiddleware = this.useMiddleware.bind(this);
     this.listen = this.listen.bind(this);
 
@@ -141,13 +144,22 @@ export default class Server {
     }
   }
 
+  requireMiddleware(entry) {
+    const { utils } = this;
+
+    return (...args) => {
+      const entryPath = utils.resolveModule(entry);
+      const middleware = utils.require(entryPath);
+      return middleware(...args);
+    };
+  }
+
   useMiddleware(middleware) {
-    const { app, utils, useMiddleware } = this;
+    const { app, useMiddleware, requireMiddleware } = this;
 
     // middleware path
     if (typeof middleware === 'string') {
-      const middlewarePath = utils.resolveModule(middleware);
-      return useMiddleware(utils.require(middlewarePath));
+      return useMiddleware(requireMiddleware(middleware));
     }
 
     if (typeof middleware === 'object') {
