@@ -5,8 +5,8 @@ export default {
   dev: Boolean(isDevelopment),
   // 环境
   env: {},
-  // 样式文件
-  css: [],
+  // 导入外部文件
+  external: [],
   // 目录
   dir: {
     // 根目录

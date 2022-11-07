@@ -25,7 +25,7 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
 
   get rules() {
     const { loadDefaultPages, options } = this;
-    const { dir, globals, css } = options;
+    const { dev, dir, globals, external } = options;
 
     const rules = super.rules;
 
@@ -37,9 +37,10 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
       }, {
         loader: 'leafage/dist/common/webpack-loader/clientPageLoader',
         options: {
-          css,
+          dev,
+          external,
           // eslint-disable-next-line no-underscore-dangle
-          app: glob.sync(path.join(dir.root, dir.src, dir.page, '_app.{js,jsx}'))?.[0] || loadDefaultPages._app,
+          getAppPath: () => glob.sync(path.join(dir.root, dir.src, dir.page, '_app.{js,jsx}'))?.[0] || loadDefaultPages._app,
           id: globals.id,
           context: globals.context,
         },
