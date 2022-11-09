@@ -9,7 +9,7 @@ export default class ReactRender {
     this.createElement = this.createElement.bind(this);
     this.renderToString = this.renderToString.bind(this);
     this.renderToStaticMarkup = this.renderToStaticMarkup.bind(this);
-    this.renderToStaticMarkup = this.renderToStaticMarkup.bind(this);
+    this.render = this.render.bind(this);
   }
 
   // eslint-disable-next-line class-methods-use-this
