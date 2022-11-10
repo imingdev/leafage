@@ -45,7 +45,7 @@ export default class Server {
   }
 
   setupMiddleware() {
-    const { options, render, renderError, useMiddleware } = this;
+    const { options, utils, render, renderError, useMiddleware } = this;
     const { dev, builder, dir, server } = options;
 
     let middlewares = [
@@ -70,6 +70,22 @@ export default class Server {
         route: `${builder.publicPath}${dir.static}`,
         handle: express.static(path.join(dir.root, dir.dist, dir.static)),
       });
+    }
+
+    // static assets
+    if (server.static) {
+      if (typeof server.static === 'string') {
+        middlewares.push({
+          route: `${server.static}`,
+          handle: express.static(utils.resolveModule(server.static)),
+        });
+      } else if (typeof server.static === 'object') {
+        const { publicPath, directory, ...staticArgs } = server.static;
+        middlewares.push({
+          route: `${publicPath}`,
+          handle: express.static(directory, staticArgs),
+        });
+      }
     }
 
     // Add user provided middleware
