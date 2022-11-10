@@ -29,6 +29,7 @@ export default ({ ctx, assets, renderer }) => {
   };
 
   const result = {
+    err,
     req,
     res,
     render,
