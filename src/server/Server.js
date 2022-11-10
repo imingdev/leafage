@@ -56,6 +56,25 @@ export default class Server {
         next();
       }];
 
+    // static assets
+    if (server.static) {
+      const staticCfg = Array.isArray(server.static) ? server.static : [server.static];
+      staticCfg.forEach((row) => {
+        if (typeof row === 'string') {
+          middlewares.push({
+            route: `${row}`,
+            handle: express.static(utils.resolveModule(row)),
+          });
+        } else if (typeof row === 'object') {
+          const { publicPath, directory, ...staticArgs } = row;
+          middlewares.push({
+            route: `${publicPath}`,
+            handle: express.static(directory, staticArgs),
+          });
+        }
+      });
+    }
+
     if (dev) {
       // devMiddleware
       middlewares.push((req, res, next) => {
@@ -70,22 +89,6 @@ export default class Server {
         route: `${builder.publicPath}${dir.static}`,
         handle: express.static(path.join(dir.root, dir.dist, dir.static)),
       });
-    }
-
-    // static assets
-    if (server.static) {
-      if (typeof server.static === 'string') {
-        middlewares.push({
-          route: `${server.static}`,
-          handle: express.static(utils.resolveModule(server.static)),
-        });
-      } else if (typeof server.static === 'object') {
-        const { publicPath, directory, ...staticArgs } = server.static;
-        middlewares.push({
-          route: `${publicPath}`,
-          handle: express.static(directory, staticArgs),
-        });
-      }
     }
 
     // Add user provided middleware
