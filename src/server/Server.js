@@ -161,11 +161,13 @@ export default class Server {
   }
 
   requireMiddleware(entry) {
-    const { utils } = this;
+    const { utils, leafage, options } = this;
 
     return (...args) => {
       const entryPath = utils.resolveModule(entry);
-      const middleware = utils.require(entryPath);
+      const middlewareFn = utils.require(entryPath);
+      const middleware = middlewareFn({ leafage, options });
+
       return middleware(...args);
     };
   }
