@@ -23,7 +23,7 @@ export default ({ ctx, assets, renderer }) => {
     const msg = message || statuses.message[statusCode];
 
     // html
-    const html = renderer.render(assets.name, { statusCode, message: msg, ...args });
+    const html = renderer.render('_error', { statusCode, message: msg, ...args });
 
     res.send(html);
   };
