@@ -129,7 +129,7 @@ export default class Server {
       const context = createContext({ ctx, assets, renderer });
 
       if (!isFunction(getServerSideProps)) {
-        return context.render(null);
+        return context.render();
       }
 
       return getServerSideProps(context);
@@ -154,7 +154,7 @@ export default class Server {
       const context = createContext({ ctx, assets, renderer });
 
       if (!isFunction(getServerSideProps)) {
-        return context.render(null);
+        return context.render();
       }
 
       return getServerSideProps(context);
