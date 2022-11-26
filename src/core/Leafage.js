@@ -17,13 +17,12 @@ export default class Leafage extends Hookable {
     this.builder = new Builder(this);
     if (options.server) {
       const server = new Server(this);
-      server.ready();
 
       this.server = server;
       this.render = server.app;
     }
 
-    this.ready = this.ready.bind(this);
+    this.dev = this.dev.bind(this);
     this.build = this.build.bind(this);
     this.listen = this.listen.bind(this);
     this.renderToString = this.renderToString.bind(this);
@@ -37,7 +36,7 @@ export default class Leafage extends Hookable {
     return `v${version}`;
   }
 
-  async ready() {
+  async dev() {
     const { build, listen, _readyCalled } = this;
 
     if (_readyCalled) {
@@ -62,10 +61,11 @@ export default class Leafage extends Hookable {
     }
   }
 
-  listen() {
+  async listen() {
     const { server } = this;
 
     if (server) {
+      await server.ready();
       server.listen();
     }
   }
