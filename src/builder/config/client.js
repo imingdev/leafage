@@ -7,6 +7,7 @@ import TerserWebpackPlugin from 'terser-webpack-plugin';
 import { WebpackManifestPlugin } from 'webpack-manifest-plugin';
 import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin';
 import { merge } from 'webpack-merge';
+import NodePolyfillWebpackPlugin from 'node-polyfill-webpack-plugin';
 import WebpackBaseConfig from './base';
 
 export default class WebpackClientConfig extends WebpackBaseConfig {
@@ -121,6 +122,8 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
               };
             })),
       }),
+      // node polyfill
+      new NodePolyfillWebpackPlugin(),
     );
 
     if (dev) {
