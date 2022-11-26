@@ -45,7 +45,7 @@ export default class Server {
   }
 
   setupMiddleware() {
-    const { options, utils, render, renderError, useMiddleware, requireMiddleware } = this;
+    const { options, utils, render, renderError, useMiddleware } = this;
     const { dev, builder, dir, server } = options;
 
     // add Powered-By
@@ -96,7 +96,7 @@ export default class Server {
     }
 
     // Custom middleware
-    useMiddleware(requireMiddleware(path.join(dir.root, dir.dist, dir.server, '_middleware')));
+    useMiddleware(path.join(dir.root, dir.dist, dir.server, '_middleware'));
 
     // Finally use router
     useMiddleware(render);
@@ -163,23 +163,12 @@ export default class Server {
   }
 
   requireMiddleware(entry) {
-    const { utils, options } = this;
+    const { utils } = this;
 
-    const getMiddlewareFn = () => {
-      const entryPath = utils.resolveModule(entry);
-      const middlewareFn = utils.require(entryPath);
+    const entryPath = utils.resolveModule(entry);
+    const middlewareFn = utils.require(entryPath);
 
-      return middlewareFn.default ?? middlewareFn;
-    };
-
-    if (options.dev) {
-      return (...args) => {
-        const middlewareFn = getMiddlewareFn();
-
-        return middlewareFn(...args);
-      };
-    }
-    return getMiddlewareFn();
+    return middlewareFn.default ?? middlewareFn;
   }
 
   useMiddleware(middleware) {
