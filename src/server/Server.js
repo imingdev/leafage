@@ -55,6 +55,11 @@ export default class Server {
       next();
     });
 
+    // 解析json数据
+    useMiddleware(express.json());
+    // 解析 application/x-www-form-urlencoded
+    useMiddleware(express.urlencoded({ extended: false }));
+
     // static assets
     if (server.static) {
       const staticCfg = Array.isArray(server.static) ? server.static : [server.static];
