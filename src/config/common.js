@@ -1,10 +1,19 @@
+import { join } from 'path';
 import { isDevelopment } from 'std-env';
+import dotEnv from 'dotenv-defaults';
 
 export default {
   // 是否是开发环境
   dev: Boolean(isDevelopment),
   // 环境
-  env: {},
+  env: {
+    ...process.env,
+    ...dotEnv.config({
+      path: join(process.cwd(), `.env.${process.env.NODE_ENV}`),
+      encoding: 'utf8',
+      defaults: join(process.cwd(), '.env'),
+    }).parsed,
+  },
   // 导入外部文件
   external: [],
   // 目录
