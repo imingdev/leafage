@@ -192,7 +192,7 @@ export default class Server {
 
     app.listen(port, host, () => {
       consola.ready({
-        message: `Server listening on http://${host}:${port}`, badge: true,
+        message: `Server listening on http://localhost:${port}`, badge: true,
       });
     });
   }
