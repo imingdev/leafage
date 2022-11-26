@@ -45,29 +45,28 @@ export default class Server {
   }
 
   setupMiddleware() {
-    const { options, utils, render, renderError, useMiddleware } = this;
+    const { options, utils, render, renderError, useMiddleware, requireMiddleware } = this;
     const { dev, builder, dir, server } = options;
 
-    let middlewares = [
-      // add Powered-By
-      (req, res, next) => {
-        res.set('X-Powered-By', `${pkg.name}/${pkg.version}`);
+    // add Powered-By
+    useMiddleware((req, res, next) => {
+      res.set('X-Powered-By', `${pkg.name}/${pkg.version}`);
 
-        next();
-      }];
+      next();
+    });
 
     // static assets
     if (server.static) {
       const staticCfg = Array.isArray(server.static) ? server.static : [server.static];
       staticCfg.forEach((row) => {
         if (typeof row === 'string') {
-          middlewares.push({
+          useMiddleware({
             route: `${row}`,
             handle: express.static(utils.resolveModule(row)),
           });
         } else if (typeof row === 'object') {
           const { publicPath, directory, ...staticArgs } = row;
-          middlewares.push({
+          useMiddleware({
             route: `${publicPath}`,
             handle: express.static(directory, staticArgs),
           });
@@ -77,7 +76,7 @@ export default class Server {
 
     if (dev) {
       // devMiddleware
-      middlewares.push((req, res, next) => {
+      useMiddleware((req, res, next) => {
         const { devMiddleware } = this;
         if (devMiddleware) return devMiddleware(req, res, next);
 
@@ -85,25 +84,20 @@ export default class Server {
       });
     } else if (!builder?.publicPath?.startsWith?.('http')) {
       // client static
-      middlewares.push({
+      useMiddleware({
         route: `${builder.publicPath}${dir.static}`,
         handle: express.static(path.join(dir.root, dir.dist, dir.static)),
       });
     }
 
-    // Add user provided middleware
-    middlewares = middlewares.concat(server.middleware);
+    // Custom middleware
+    useMiddleware(requireMiddleware(path.join(dir.root, dir.dist, dir.server, '_middleware')));
 
     // Finally use router
-    middlewares.push(render);
-
-    // Setup user provided middleware
-    middlewares = server.setupMiddleware(middlewares) || middlewares;
+    useMiddleware(render);
 
     // Error use router
-    middlewares.push(renderError);
-
-    middlewares.forEach(useMiddleware);
+    useMiddleware(renderError);
   }
 
   render(req, res, next) {
@@ -164,15 +158,23 @@ export default class Server {
   }
 
   requireMiddleware(entry) {
-    const { utils, leafage, options } = this;
+    const { utils, options } = this;
 
-    return (...args) => {
+    const getMiddlewareFn = () => {
       const entryPath = utils.resolveModule(entry);
       const middlewareFn = utils.require(entryPath);
-      const middleware = middlewareFn({ leafage, options });
 
-      return middleware(...args);
+      return middlewareFn.default ?? middlewareFn;
     };
+
+    if (options.dev) {
+      return (...args) => {
+        const middlewareFn = getMiddlewareFn();
+
+        return middlewareFn(...args);
+      };
+    }
+    return getMiddlewareFn();
   }
 
   useMiddleware(middleware) {

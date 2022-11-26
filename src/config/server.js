@@ -10,8 +10,4 @@ export default {
     directory: join(process.cwd(), 'public'),
     publicPath: '/public',
   },
-  // 中间件
-  middleware: [],
-  // 设置中间件
-  setupMiddleware: (middleware) => middleware,
 };

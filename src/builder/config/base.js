@@ -61,6 +61,7 @@ export default class WebpackBaseConfig {
       _document: 'leafage/dist/pages/Document',
       _app: 'leafage/dist/pages/App',
       _error: 'leafage/dist/pages/Error',
+      _middleware: 'leafage/dist/pages/Middleware',
     };
   }
 
