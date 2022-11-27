@@ -105,12 +105,13 @@ export default class Server {
     useMiddleware(renderError);
   }
 
-  render(req, res, next) {
+  async render(req, res, next) {
     const { renderer } = this;
     const { name, params, styles, scripts } = renderer.matchResources(req.path);
     // check res
     if (name === '_error') {
-      return next(createError(404));
+      next(createError(404));
+      return;
     }
 
     try {
@@ -118,7 +119,8 @@ export default class Server {
       // check method
       const method = req.method.toLowerCase();
       if (!config.methods.includes(method)) {
-        return next(createError(404));
+        next(createError(404));
+        return;
       }
 
       // set params
@@ -128,15 +130,17 @@ export default class Server {
       const context = createContext({ ctx, assets, renderer });
 
       if (!isFunction(getServerSideProps)) {
-        return context.render();
+        context.render();
+        return;
       }
 
-      return getServerSideProps(context);
+      await getServerSideProps(context);
     } catch (err) {
       if (err.name === 'URIError') {
-        return next(createError(400, err));
+        next(createError(400, err));
+        return;
       }
-      return next(err);
+      next(err);
     }
   }
 
@@ -153,12 +157,13 @@ export default class Server {
       const context = createContext({ ctx, assets, renderer });
 
       if (!isFunction(getServerSideProps)) {
-        return context.render();
+        context.render();
+        return;
       }
 
-      return getServerSideProps(context);
+      await getServerSideProps(context);
     } catch (errInfo) {
-      return next(errInfo);
+      next(errInfo);
     }
   }
 
