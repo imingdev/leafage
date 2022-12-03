@@ -71,6 +71,9 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
 
     const superConfig = super.config();
     const currentConfig = {
+      resolve: {
+        extensions: ['.server.js', '.server.jsx', '.js', '.jsx', '.json', '...'],
+      },
       externals: WebpackNodeExternals({
         // load non-javascript files with extensions, presumably via loaders
         allowlist: [/\.(?!(?:jsx?|json)$).{1,5}$/i],

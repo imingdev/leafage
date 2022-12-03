@@ -190,6 +190,9 @@ export default class WebpackClientConfig extends WebpackBaseConfig {
     const superConfig = super.config();
     const currentConfig = {
       optimization: optimization(),
+      resolve: {
+        extensions: ['.client.js', '.client.jsx', '.js', '.jsx', '.json', '...'],
+      },
     };
 
     return extendConfig(merge(superConfig, currentConfig));
