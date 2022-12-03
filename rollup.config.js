@@ -14,6 +14,7 @@ const packages = [
   'pages/App',
   'pages/Document',
   'pages/Error',
+  'pages/Middleware',
   'server/Server',
   'renderer/Renderer',
 ];

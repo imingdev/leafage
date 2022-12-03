@@ -24,6 +24,7 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
       pattern: [
         path.join(dir.root, dir.src, dir.page, dir.pattern),
         path.join(dir.root, dir.src, dir.page, '{_document,_app,_error}.{js,jsx}'),
+        path.join(dir.root, dir.src, dir.page, '_middleware.js'),
       ],
       generate: (entry) => {
         // eslint-disable-next-line no-underscore-dangle,no-param-reassign
@@ -32,6 +33,8 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
         if (!entry._app) entry._app = loadDefaultPages._app;
         // eslint-disable-next-line no-underscore-dangle,no-param-reassign
         if (!entry._error) entry._error = loadDefaultPages._error;
+        // eslint-disable-next-line no-underscore-dangle,no-param-reassign
+        if (!entry._middleware) entry._middleware = loadDefaultPages._middleware;
 
         // eslint-disable-next-line prefer-spread
         return Object.assign.apply(Object, Object.keys(entry)
@@ -68,6 +71,9 @@ export default class WebpackServerConfig extends WebpackBaseConfig {
 
     const superConfig = super.config();
     const currentConfig = {
+      resolve: {
+        extensions: ['.server.js', '.server.jsx', '.js', '.jsx', '.json', '...'],
+      },
       externals: WebpackNodeExternals({
         // load non-javascript files with extensions, presumably via loaders
         allowlist: [/\.(?!(?:jsx?|json)$).{1,5}$/i],

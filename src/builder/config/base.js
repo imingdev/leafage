@@ -9,6 +9,8 @@ import { styleLoaders, assetsLoaders } from '../utils/loaders';
 export default class WebpackBaseConfig {
   constructor(options) {
     this.options = options;
+    this.isServer = false;
+    this.isClient = false;
 
     this.output = this.output.bind(this);
     this.nodeEnv = this.nodeEnv.bind(this);
@@ -61,6 +63,7 @@ export default class WebpackBaseConfig {
       _document: 'leafage/dist/pages/Document',
       _app: 'leafage/dist/pages/App',
       _error: 'leafage/dist/pages/Error',
+      _middleware: 'leafage/dist/pages/Middleware',
     };
   }
 
@@ -219,7 +222,6 @@ export default class WebpackBaseConfig {
         rules,
       },
       resolve: {
-        extensions: ['.js', '.jsx', '.json'],
         alias,
       },
       plugins: plugins(),
