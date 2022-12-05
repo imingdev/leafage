@@ -6,9 +6,9 @@
     "start": "cross-env NODE_ENV=production node bin/start.js"
   },
   "dependencies": {
+    "leafage": "latest",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "leafage": "latest"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "cross-env": "^7.0.3"
