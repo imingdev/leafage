@@ -138,6 +138,20 @@ export default class Server {
    */
   render(filePath, props, callback) {
     const { renderer } = this;
+    const { app } = this;
+
+    const getViewName = (_path) => {
+      const basePath = app.get('views');
+      const ext = app.get('view engine').replace(/^\./, '');
+
+      return _path
+        .replace(basePath, '')
+        .replace(new RegExp(`.${ext}$`), '')
+        .replace(/\\/g, '/')
+        .split('/')
+        .filter(Boolean)
+        .join('/');
+    };
 
     try {
       // eslint-disable-next-line no-param-reassign
@@ -147,7 +161,7 @@ export default class Server {
       // eslint-disable-next-line no-param-reassign
       delete props.cache;
 
-      const viewName = path.parse(filePath).name;
+      const viewName = getViewName(filePath);
       const html = renderer.render(viewName, props);
 
       return callback(null, html);
