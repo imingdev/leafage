@@ -7,6 +7,7 @@ import { name, dependencies, devDependencies } from './package.json';
 const packages = [
   'common/babel-plugin/autoCssModules',
   'common/webpack-loader/clientPageLoader',
+  'common/server/Router',
   'common/Utils',
   'builder/Builder',
   'config/config',
@@ -14,7 +15,6 @@ const packages = [
   'pages/App',
   'pages/Document',
   'pages/Error',
-  'pages/Middleware',
   'server/Server',
   'renderer/Renderer',
 ];

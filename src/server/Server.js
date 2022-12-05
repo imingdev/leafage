@@ -1,31 +1,40 @@
 import path from 'path';
 import express from 'express';
 import consola from 'consola';
-import isFunction from 'lodash/isFunction';
-import createError from 'http-errors';
+import hmr from 'node-hmr';
 import Utils from 'leafage/dist/common/Utils';
-import createContext from './context';
+import errorHandle from './utils/errorHandle';
 import pkg from '../../package.json';
 
 export default class Server {
   constructor(leafage) {
     const { options, renderer } = leafage;
+    const { dir } = options;
 
     this.leafage = leafage;
     this.renderer = renderer;
     this.options = options;
     this.utils = new Utils(options);
 
-    // 关闭版权并解决代理时取不到ip地址
-    this.app = express().disable('x-powered-by').set('trust proxy', 'loopback');
-
     this.ready = this.ready.bind(this);
     this.setupMiddleware = this.setupMiddleware.bind(this);
+    this.setupRouter = this.setupRouter.bind(this);
     this.render = this.render.bind(this);
     this.renderError = this.renderError.bind(this);
     this.requireMiddleware = this.requireMiddleware.bind(this);
     this.useMiddleware = this.useMiddleware.bind(this);
     this.listen = this.listen.bind(this);
+
+    // 关闭版权并解决代理时取不到ip地址
+    this.app = express()
+      // 关闭版权
+      .disable('x-powered-by')
+      // 解决代理时取不到ip地址
+      .set('trust proxy', 'loopback')
+      // 设置模板引擎
+      .engine('js', this.render)
+      .set('views', path.join(dir.root, dir.dist, dir.server))
+      .set('view engine', 'js');
 
     if (options.dev) {
       // devMiddleware placeholder
@@ -38,14 +47,17 @@ export default class Server {
   }
 
   async ready() {
-    const { setupMiddleware } = this;
+    const { setupMiddleware, setupRouter } = this;
 
     // Setup middleware
     await setupMiddleware();
+
+    // Setup router
+    await setupRouter();
   }
 
   setupMiddleware() {
-    const { options, utils, render, renderError, useMiddleware } = this;
+    const { options, utils, useMiddleware } = this;
     const { dev, builder, dir, server } = options;
 
     // add Powered-By
@@ -94,76 +106,66 @@ export default class Server {
         handle: express.static(path.join(dir.root, dir.dist, dir.static)),
       });
     }
+  }
 
-    // Custom middleware
-    useMiddleware(path.join(dir.root, dir.dist, dir.server, '_middleware'));
+  setupRouter() {
+    const { app, options, renderError, useMiddleware, requireMiddleware } = this;
 
-    // Finally use router
-    useMiddleware(render);
+    const viewName = '_router.js';
+    const basePath = app.get('views');
+    const fullPath = path.join(basePath, viewName);
+    let router = requireMiddleware(fullPath);
+
+    if (options.dev) {
+      // hmr
+      hmr(() => { router = requireMiddleware(fullPath); }, { watchDir: basePath, watchFilePatterns: [viewName] });
+      // Finally use router
+      useMiddleware((req, res, next) => router(req, res, next));
+    } else {
+      // Finally use router
+      useMiddleware(router);
+    }
 
     // Error use router
     useMiddleware(renderError);
   }
 
-  async render(req, res, next) {
+  /**
+   * 渲染
+   * @param filePath  文件路径
+   * @param props     数据
+   * @param callback  回调
+   */
+  render(filePath, props, callback) {
     const { renderer } = this;
-    const { name, params, styles, scripts } = renderer.matchResources(req.path);
-    // check res
-    if (name === '_error') {
-      next(createError(404));
-      return;
-    }
 
     try {
-      const { Document, App, Component, getServerSideProps, config } = renderer.requireComponentConfig(name);
-      // check method
-      const method = req.method.toLowerCase();
-      if (!config.methods.includes(method)) {
-        next(createError(404));
-        return;
-      }
+      // eslint-disable-next-line no-param-reassign
+      delete props.settings;
+      // eslint-disable-next-line no-param-reassign,no-underscore-dangle
+      delete props._locals;
+      // eslint-disable-next-line no-param-reassign
+      delete props.cache;
 
-      // set params
-      req.params = params || {};
-      const ctx = { req, res };
-      const assets = { name, styles, scripts, Document, App, Component };
-      const context = createContext({ ctx, assets, renderer });
+      const viewName = path.parse(filePath).name;
+      const html = renderer.render(viewName, props);
 
-      if (!isFunction(getServerSideProps)) {
-        context.render();
-        return;
-      }
-
-      await getServerSideProps(context);
+      return callback(null, html);
     } catch (err) {
-      if (err.name === 'URIError') {
-        next(createError(400, err));
-        return;
-      }
-      next(err);
+      return callback(err);
     }
   }
 
-  async renderError(err, req, res, next) {
+  renderError(err, req, res, next) {
     const { renderer } = this;
-    const viewName = '_error';
-    const { styles, scripts } = renderer.getResources(viewName);
 
     try {
-      const { Document, App, Component, getServerSideProps } = renderer.requireComponentConfig(viewName);
+      const { statusCode, message } = errorHandle(err, req, res);
+      const html = renderer.render('_error', { statusCode, message });
 
-      const ctx = { req, res, err };
-      const assets = { name: viewName, styles, scripts, Document, App, Component };
-      const context = createContext({ ctx, assets, renderer });
-
-      if (!isFunction(getServerSideProps)) {
-        context.render();
-        return;
-      }
-
-      await getServerSideProps(context);
+      return res.send(html);
     } catch (errInfo) {
-      next(errInfo);
+      return next(errInfo);
     }
   }
 

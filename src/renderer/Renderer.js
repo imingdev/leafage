@@ -1,6 +1,5 @@
 import path from 'path';
 import fs from 'fs';
-import { match as createRegexpMatch } from 'path-to-regexp';
 import Utils from 'leafage/dist/common/Utils';
 import ReactRender from './ReactRender';
 
@@ -18,7 +17,6 @@ export default class Renderer {
     this.requireComponent = this.requireComponent.bind(this);
     this.requireComponentConfig = this.requireComponentConfig.bind(this);
     this.loadResources = this.loadResources.bind(this);
-    this.matchResources = this.matchResources.bind(this);
     this.getResources = this.getResources.bind(this);
     this.render = this.render.bind(this);
 
@@ -46,20 +44,7 @@ export default class Renderer {
     // normal
     const component = utils.require(fullPath);
 
-    // formatter methods
-    let methods = component?.config?.methods || ['get'];
-    if (typeof methods === 'string') {
-      methods = [methods];
-    }
-    methods = methods.map((r) => r?.toLowerCase?.());
-
-    const result = {
-      Component: component.default ?? component,
-      getServerSideProps: component?.getServerSideProps,
-      config: {
-        methods,
-      },
-    };
+    const result = component.default ?? component;
 
     if (!dev) {
       // prod environment add cache
@@ -74,18 +59,16 @@ export default class Renderer {
     const { requireComponent } = this;
 
     // Document
-    const { Component: Document } = requireComponent('_document');
+    const Document = requireComponent('_document');
     // App
-    const { Component: App } = requireComponent('_app');
+    const App = requireComponent('_app');
     // Component
-    const { Component, getServerSideProps, config } = requireComponent(name);
+    const Component = requireComponent(name);
 
     return {
       Document,
       App,
       Component,
-      getServerSideProps,
-      config,
     };
   }
 
@@ -110,41 +93,6 @@ export default class Renderer {
     this.resources = resources;
 
     return resources;
-  }
-
-  // 根据路径名匹配资源
-  matchResources(pathname) {
-    const { resources } = this;
-    const { _error, ...normalResources } = resources || {};
-    // eslint-disable-next-line guard-for-in,no-restricted-syntax
-    for (const name in normalResources) {
-      const { styles, scripts } = normalResources[name];
-
-      const routerPath = `/${name.replace(/\/?index$/, '').replace(/_/g, ':')}`;
-      const matchOptions = {
-        decode: decodeURIComponent,
-        strict: true,
-        end: true,
-        sensitive: false,
-      };
-      const matchReg = createRegexpMatch(routerPath, matchOptions);
-      const result = matchReg(pathname);
-      if (result) {
-        return {
-          name,
-          params: result?.params || {},
-          styles,
-          scripts,
-        };
-      }
-    }
-
-    return {
-      name: '_error',
-      params: {},
-      styles: _error.styles,
-      scripts: _error.scripts,
-    };
   }
 
   // 根据视图名称获取资源

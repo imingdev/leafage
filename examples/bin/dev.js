@@ -4,5 +4,5 @@ const config = require('../leafage.config');
 (async () => {
   const leafage = new Leafage(config);
 
-  await leafage.ready();
+  await leafage.dev();
 })();
