@@ -52,6 +52,8 @@ export default class ReactRender {
       helmet,
       context: globals.context,
       id: globals.id,
+      options,
+      statistic: globals.statistic(options) || {},
     });
 
     return `<!doctype html>${content}`;

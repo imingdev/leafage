@@ -41,5 +41,12 @@ export default {
     id: 'app-main',
     // 上下文
     context: 'window.__INITIAL_STATE__',
+    // 网站统计
+    // options
+    // statistic: () => ({
+    //   baidu: 'id',
+    //   custom: 'code',
+    // }),
+    statistic: () => {},
   },
 };
