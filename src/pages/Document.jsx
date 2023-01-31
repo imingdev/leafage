@@ -1,22 +1,49 @@
 import React from 'react';
 import devalue from 'devalue';
+import { Helmet } from 'react-helmet';
 
 const RenderJudge = ({ value, active, inactive }) => (value ? active : inactive);
 const Script = ({ code }) => (
   // eslint-disable-next-line react/no-danger
   <script type="text/javascript" dangerouslySetInnerHTML={{ __html: code }} />
 );
-const genBaiduCode = (id) => `
-var _hmt = _hmt || [];
-(function() {
-  var hm = document.createElement("script");
-  hm.src = "https://hm.baidu.com/hm.js?${id}";
-  document.head.appendChild(hm);
-})();
-`;
+const genBaiduCode = (id) => {
+  const code = `
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?${id}";
+      document.head.appendChild(hm);
+    })();
+  `;
+  return (
+    <Script code={code} />
+  );
+};
+const genGoogleCode = (id) => {
+  const code = `
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '${id}');
+  `;
+
+  return (
+    <>
+      <Helmet>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${id}`} />
+      </Helmet>
+      <Script code={code} />
+    </>
+  );
+};
+const genCustomCode = (code) => (
+  <Script code={code} />
+);
 const genMap = {
   baidu: genBaiduCode,
-  custom: (c) => c,
+  google: genGoogleCode,
+  custom: genCustomCode,
 };
 
 const Document = ({ body, scripts, styles, props, helmet, context, id, statistic }) => (
@@ -46,9 +73,7 @@ const Document = ({ body, scripts, styles, props, helmet, context, id, statistic
         return (
           <RenderJudge
             value={code}
-            active={(
-              <Script code={code} />
-            )}
+            active={code}
             key={key}
           />
         );

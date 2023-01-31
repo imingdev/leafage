@@ -31,7 +31,7 @@ export default class ReactRender {
 
   render(assets, props) {
     const { renderToString, renderToStaticMarkup, options } = this;
-    const { globals } = options;
+    const { context, id, statistic } = options.globals;
     const { Document, App, Component, styles, scripts } = assets;
 
     // render body
@@ -50,10 +50,10 @@ export default class ReactRender {
       styles,
       props,
       helmet,
-      context: globals.context,
-      id: globals.id,
+      context,
+      id,
       options,
-      statistic: globals.statistic(options) || {},
+      statistic: (typeof statistic === 'object' ? statistic : statistic?.(options)) || {},
     });
 
     return `<!doctype html>${content}`;
